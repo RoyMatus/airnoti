@@ -1,0 +1,35 @@
+AirNoti third-party notices
+
+AirTransport.kt and HapticProtocol adapt the experimentally observed transport
+and haptic path from Thore Koritzius / fitbit-air, MIT, Copyright 2026 Thore
+Koritzius, commit 5f76f5f8d48d1dab420feeebc6ac87f52be78ba4.
+Full license: third_party/FITBIT-AIR-MIT.txt.
+Changes: remove Flutter, sensors, diagnostics, scanning, warm link and retries;
+use selected bonded device, bounded sync wait, strict acknowledgment and readback,
+bounded handoff, cancellation and small coroutine adapter. Upstream hardware
+claims are not AirNoti hardware claims.
+
+Golden Gate bindings (app/src/main/vendor/com/fitbit) and native libraries:
+Copyright 2017-2020 Fitbit, Inc.; Apache-2.0.
+https://github.com/Google-Health-API/golden-gate
+b8a6f2552e12aaf92c1549dc88a41c9b7e73f1aa
+Full license: third_party/APACHE-2.0.txt; original NOTICE:
+third_party/golden-gate/NOTICE. Bindings retain upstream headers and the
+fitbit-air per-stack resolver adaptation. Native bootstrap constants are public
+protocol constants from the Apache-licensed upstream, not a user's pairing keys.
+
+libgg.so statically includes:
+- Mbed TLS 2.28.10, 2fc8413bfcb51354c8e679141b17b3f1a5942561,
+  Apache-2.0 option, third_party/mbedtls/LICENSE.
+- lwIP 1bb6e7f52de1cd86be0eed31e348431edc2cd01e,
+  Copyright 2001, 2002 Swedish Institute of Computer Science,
+  BSD-3-Clause, third_party/lwip/COPYING.
+
+Native provenance and per-file SHA-256: tools/native/manifest.json.
+Build helper adapted from fitbit-air (MIT) only for AirNoti directory layout.
+No Google Health APK, extracted proprietary libraries, account credentials or
+private pairing keys are distributed or loaded.
+
+AndroidX, Kotlin, kotlinx.coroutines, RxJava/RxAndroid, OkHttp and Timber retain
+their respective Apache-2.0 licenses; Reactive Streams is CC0. Maven artifact
+license metadata remains applicable. No AirBridge code or binaries are copied.

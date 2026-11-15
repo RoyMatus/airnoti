@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">AirNoti</string>
+    <string name="tagline">Короткий сигнал на запястье</string>
+    <string name="enabled">Включено</string>
+    <string name="disabled">Пересылка выключена</string>
+    <string name="ready">Готов к работе</string>
+    <string name="bt_off">Bluetooth выключен</string>
+    <string name="permission_needed">Требуется разрешение Bluetooth</string>
+    <string name="grant_bluetooth">Разрешить Bluetooth</string>
+    <string name="notification_access">Доступ к уведомлениям</string>
+    <string name="listener_wait">Ожидание подключения службы уведомлений</string>
+    <string name="choose_device">Выбрать Fitbit Air</string>
+    <string name="device_missing">Выберите сопряжённый Fitbit Air</string>
+    <string name="no_devices">Нет сопряжённых устройств. Сначала подключите Air в Google Health, затем вернитесь сюда.</string>
+    <string name="device_hint">Выберите именно Fitbit Air. Сопряжение и ключи Google Health не меняются.</string>
+    <string name="test">Тест вибрации</string>
+    <string name="sending">Отправка команды…</string>
+    <string name="verified">Команда подтверждена, настройка проверена. Почувствовали сигнал?</string>
+    <string name="unavailable">Браслет недоступен. Проверьте Bluetooth и расстояние.</string>
+    <string name="failed">Ошибка подключения или неподдерживаемый протокол</string>
+    <string name="unknown">Результат неопределён: сигнал мог пройти. Проверьте силу в Google Health; автоматического повтора нет.</string>
+    <string name="busy">Канал занят. Событие пропущено.</string>
+    <string name="handoff">Передача канала не подтверждена. Проверьте синхронизацию Google Health.</string>
+    <string name="all_apps">Получать от всех приложений</string>
+    <string name="search">Поиск по приложениям</string>
+    <string name="nothing_selected">Ни одно приложение не выбрано</string>
+    <string name="selected_count">Выбрано: %1$d</string>
+    <string name="no_matches">Приложения не найдены</string>
+    <string name="strength">Сила вибрации</string>
+    <string name="strength_current">По умолчанию</string>
+    <string name="strength_low">Слабая</string>
+    <string name="strength_high">Сильная</string>
+    <string name="strength_note">«Слабая» и «Сильная» изменяют общую настройку браслета при следующем сигнале. «По умолчанию» сохраняет значение Google Health.</string>
+    <string name="alpha_note">Экспериментальная версия. Работа на физическом Air ещё не проверена. Неофициальное приложение, не связано с Google или Fitbit.</string>
+    <string name="close">Закрыть</string>
+    <string name="setup_note">Разрешите Bluetooth и доступ к уведомлениям, выберите Air и приложения. Для теста включите главный переключатель.</string>
+    <string name="restricted_note">Если Android ограничил доступ: откройте сведения об AirNoti и используйте системный пункт «Разрешить ограниченные настройки», если он доступен. Отключать Play Protect не нужно.</string>
+    <string name="app_info">Сведения о приложении</string>
+    <string name="help">Помощь</string>
+</resources>
+
+
+
+
