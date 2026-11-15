@@ -25,6 +25,7 @@ class AirNotificationListener : NotificationListenerService() {
         policy.clear(); queue.clear()
         activeNotifications?.forEach { policy.seed(extract(it)) }
         app.listenerConnected.value = true
+        app.refreshDevice()
     }
     override fun onListenerDisconnected() {
         connectedAt = Long.MAX_VALUE; queue.clear(); drain?.cancel(); app.cancel()
@@ -68,3 +69,4 @@ class AirNotificationListener : NotificationListenerService() {
     }
     override fun onDestroy() { scope.cancel(); queue.clear(); app.listenerConnected.value = false; app.cancel(); super.onDestroy() }
 }
+

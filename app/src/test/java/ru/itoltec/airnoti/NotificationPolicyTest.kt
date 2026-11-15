@@ -4,7 +4,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class NotificationPolicyTest {
-    private val selected = Settings(enabled = true, packages = setOf("messages"))
+    private val selected = Settings(enabled = true, all = false, packages = setOf("messages"))
     private fun n(key: String = "1", pkg: String = "messages", hash: String = "a", service: Boolean = false, time: Long = 101) = Notice(key, pkg, hash, null, false, service, time)
     @Test fun selectionAndAllRetainIndividualChoice() {
         val all = selected.copy(all = true)
@@ -70,3 +70,4 @@ class NotificationPolicyTest {
     }
     @Test(expected = IllegalArgumentException::class) fun unsupportedStrengthCannotBeWritten() { HapticProtocol.write(1) }
 }
+

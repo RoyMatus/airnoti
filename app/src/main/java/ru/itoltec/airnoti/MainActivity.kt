@@ -71,10 +71,19 @@ private data class AppEntry(val info: ApplicationInfo, val title: String)
     var packagesChanged by remember { mutableIntStateOf(0) }
     var permissionChanged by remember { mutableIntStateOf(0) }
     var apps by remember { mutableStateOf<List<AppEntry>>(emptyList()) }
-    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionChanged++ }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        permissionChanged++
+        if (granted) {
+            app.refreshDevice()
+            if (app.settings.value.enabled && !context.getSystemService(NotificationManager::class.java).isNotificationListenerAccessGranted(ComponentName(context, AirNotificationListener::class.java))) {
+                context.startActivity(Intent(AndroidSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            }
+        }
+    }
     val hasBluetooth = remember(resumeCount, environment, permissionChanged) { app.bluetoothPermission() }
     val bluetoothOn = remember(resumeCount, environment, permissionChanged) { app.bluetoothReady() }
     val access = remember(resumeCount, listener) { context.getSystemService(NotificationManager::class.java).isNotificationListenerAccessGranted(ComponentName(context, AirNotificationListener::class.java)) }
+    LaunchedEffect(resumeCount, hasBluetooth, environment) { app.refreshDevice() }
     DisposableEffect(Unit) {
         val receiver = object : BroadcastReceiver() { override fun onReceive(c: Context, i: Intent) { packagesChanged++ } }
         val filter = IntentFilter().apply { addAction(Intent.ACTION_PACKAGE_ADDED); addAction(Intent.ACTION_PACKAGE_REMOVED); addAction(Intent.ACTION_PACKAGE_CHANGED); addDataScheme("package") }
@@ -110,7 +119,11 @@ private data class AppEntry(val info: ApplicationInfo, val title: String)
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ToggleRow(stringResource(R.string.enabled), settings.enabled, true, switch = true) { enabled ->
-                        if (!enabled) app.disable() else app.enable()
+                        if (!enabled) app.disable() else {
+                            app.enable()
+                            if (!hasBluetooth && Build.VERSION.SDK_INT >= 31) permission.launch(Manifest.permission.BLUETOOTH_CONNECT)
+                            else if (!access) context.startActivity(Intent(AndroidSettings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                        }
                     }
                     Text(stringResource(status), style = MaterialTheme.typography.bodyLarge)
                 }
@@ -213,3 +226,4 @@ private data class AppEntry(val info: ApplicationInfo, val title: String)
         if (switch) Switch(checked, onCheckedChange = null, enabled = enabled) else Checkbox(checked, onCheckedChange = null, enabled = enabled)
     }
 }
+

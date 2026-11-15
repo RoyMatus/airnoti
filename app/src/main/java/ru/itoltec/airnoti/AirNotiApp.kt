@@ -21,10 +21,11 @@ class AirNotiApp : Application() {
     val environment = MutableStateFlow(0)
     private var operation: Job? = null
     private var stopped = false
+    private var choosing: Job? = null
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             environment.value++
-            if (!bluetoothReady()) cancel()
+            if (!bluetoothReady()) cancel() else refreshDevice()
         }
     }
     override fun onCreate() {
@@ -32,13 +33,25 @@ class AirNotiApp : Application() {
         preferences = SettingsRepository(this)
         settings = preferences.flow.catch { emit(Settings()) }.stateIn(scope, SharingStarted.Eagerly, Settings())
         transport = AirTransport(this)
-        registerReceiver(receiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+        registerReceiver(receiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED).apply { addAction(android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED) })
         scope.launch {
             var previous = Settings()
             settings.collect { current ->
                 if (!current.enabled || current.address != previous.address) cancel()
                 previous = current
             }
+        }
+    }
+    @android.annotation.SuppressLint("MissingPermission")
+    fun refreshDevice() {
+        if (!bluetoothPermission() || choosing?.isActive == true) return
+        choosing = scope.launch {
+            val current = preferences.flow.first()
+            val devices = runCatching {
+                getSystemService(BluetoothManager::class.java).adapter?.bondedDevices?.map { BondedCandidate(it.address, it.name) }.orEmpty()
+            }.getOrDefault(emptyList())
+            val chosen = DeviceChoice.choose(current.address, devices)
+            if (chosen != null && chosen != current.address) preferences.device(chosen)
         }
     }
     fun bluetoothPermission(): Boolean = Build.VERSION.SDK_INT < 31 || checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
@@ -56,3 +69,4 @@ class AirNotiApp : Application() {
     fun enable() { scope.launch { preferences.enabled(true); stopped = false } }
     fun disable() { stopped = true; cancel(); scope.launch { preferences.enabled(false) } }
 }
+

@@ -9,10 +9,12 @@ Date: 2026-11-15. Only completed checks belong under results.
 - Twelve JVM policy/protocol tests passed: selection/all-mode semantics, disabled gate, self/service/unselected filtering, changed content under reused ID, initial snapshot suppression, bounded queue/expiry, burst conflation/rate limit, group child/summary ordering, pending selection changes, same-key replacement, protobuf encoding and invalid strength.
 - Two instrumented Pixel tests passed: native library loading + JNI Tx/Rx construction/disposal without BLE; DataStore persistence and preservation of individual selection across all-mode toggles.
 - All six vendored native binaries matched pinned SHA-256 manifest.
-- Final minimal UI: signed release/debug assembly, 12 JVM tests and Android Lint passed (0 errors; 20 warnings, mainly dependency versions and inherited unused resources/style suggestions).
+- Final minimal UI: signed release/debug assembly, 16 JVM tests and Android Lint passed (0 errors; 20 warnings, mainly dependency versions and inherited unused resources/style suggestions).
 - Pixel 7 UI instrumentation passed: light, dark, and 200% font; scrolling and control semantics asserted. Three screenshots visually inspected: no overlapping or clipped controls, larger text wraps and screen scrolls. Test run kept system theme/font unchanged.
 - APK v2 signature verified, RSA3072, release certificate SHA-256 212fe0f4379bbc65344d341e1587df3c3db25b6f606db617b86f7043c6353947.
 - APK permissions inspected: Bluetooth/Connect plus AndroidX signature receiver permission only. No Internet, SMS, location, scan, QUERY_ALL_PACKAGES or FGS permissions.
+
+- Four automatic-device-choice tests passed: unique Air, preserved explicit choice, ambiguous devices and unrelated/missing names.
 
 ## Still to confirm
 
@@ -41,3 +43,4 @@ Use the same phone/Air charge levels, location, radio settings, Google Health sy
 - D: AirNoti off, same 60-notification schedule.
 
 Record Android battery statistics for AirNoti UID (CPU, wakelocks, Bluetooth attribution if available), start/end phone and band battery, successful signals and latency. Separate test traffic from other activity. Compare B-A for idle overhead and C-D for notification overhead; do not infer precision beyond battery gauge resolution. For short versus warm link use a separate experimental branch and the identical schedule, including sync success and connection latency. No percentage or autonomy claim can be made from the architecture alone.
+

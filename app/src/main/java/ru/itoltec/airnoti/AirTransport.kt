@@ -188,7 +188,8 @@ class AirTransport(private val context: Context) {
         else { c.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE; c.value = bytes; g.writeCharacteristic(c) }
         if (!accepted) { writing = false; finish(if (sent) Result.UNKNOWN else Result.FAILED) }
     }
-    private fun finish(result: Result) {
+    private fun finish(requestedResult: Result) {
+        val result = if (sent && requestedResult in setOf(Result.FAILED, Result.UNAVAILABLE, Result.BUSY)) Result.UNKNOWN else requestedResult
         if (reply == null) return
         if (finishing) { complete(if (result == Result.UNKNOWN) result else Result.HANDOFF_UNCONFIRMED); return }
         finishing = true
@@ -236,3 +237,4 @@ internal object HapticProtocol {
     fun write(value: Int): ByteArray { require(value == 2 || value == 3); return byteArrayOf(10, 4, 10, 2, 8, value.toByte()) }
     fun tap(value: Int): ByteArray = write(if (value == 2) 3 else 2) + write(value)
 }
+
