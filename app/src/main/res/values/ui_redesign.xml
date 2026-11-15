@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="ui_notifications_on_band">Уведомления на браслете</string>
+    <string name="ui_ready_to_send">Готов к отправке</string>
+    <string name="ui_relay_off">Уведомления выключены</string>
+    <string name="ui_your_band">Ваш браслет</string>
+    <string name="ui_test_vibration">Проверить вибрацию</string>
+    <string name="ui_what_to_send">Что передавать</string>
+    <string name="ui_apps">Приложения</string>
+    <string name="ui_all_apps">Все приложения</string>
+    <string name="ui_including_new_apps">Включая новые установленные</string>
+    <string name="ui_apps_title">От каких приложений?</string>
+    <string name="ui_apps_subtitle">Выберите только то, что важно.</string>
+    <string name="ui_find_app">Найти приложение</string>
+    <string name="ui_choose_apps">Выберите приложения</string>
+    <string name="ui_done">Готово</string>
+    <string name="ui_back">Назад</string>
+    <string name="ui_home">На главный</string>
+    <string name="ui_signal_hint">Браслет подаст короткий сигнал, когда придёт новое уведомление.</string>
+    <string name="ui_felt_signal">Почувствовали сигнал?</string>
+    <string name="ui_yes_felt">Да, всё хорошо</string>
+    <string name="ui_no">Нет</string>
+    <string name="ui_no_vibration">Нет вибрации</string>
+    <string name="ui_check_band">Проверим браслет</string>
+    <string name="ui_move_closer">Поднесите браслет к телефону.</string>
+    <string name="ui_check_bluetooth">Проверьте, что Bluetooth включён.</string>
+    <string name="ui_wait_sync">Дождитесь завершения синхронизации Google Health.</string>
+    <string name="ui_check_strength">Если сигнала нет, проверьте силу вибрации в Google Health.</string>
+    <string name="ui_test_again">Проверить ещё раз</string>
+    <string name="ui_setup_help">Как настроить AirNoti</string>
+    <string name="ui_allow_notifications">Разрешите уведомления</string>
+    <string name="ui_bluetooth_reason">Bluetooth нужен, чтобы передавать сигнал с телефона на браслет.</string>
+    <string name="ui_notification_reason">В настройках Android найдите AirNoti и разрешите доступ к уведомлениям.</string>
+    <string name="ui_open_settings">Открыть настройки</string>
+    <string name="ui_pair_first">Сначала добавьте Fitbit Air в Google Health на этом телефоне.</string>
+    <string name="ui_strength_health">Как в Google Health</string>
+    <string name="ui_strength_default_note">Используется текущая сила вибрации браслета.</string>
+    <string name="ui_strength_change_note">При следующем сигнале изменится общая настройка вибрации браслета, в том числе для Google Health.</string>
+    <string name="ui_privacy_note">AirNoti работает на телефоне без аккаунта. Тексты уведомлений не сохраняются.</string>
+    <string name="ui_step">Шаг %1$d из %2$d</string>
+    <string name="ui_selected_apps">Выбрано приложений: %1$d</string>
+<string name="ui_enable_bluetooth">Включить Bluetooth</string><string name="ui_test_cancelled">Отправка отменена или ещё не началась.</string></resources>

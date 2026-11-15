@@ -2,7 +2,11 @@
 
 Date: 2026-11-15. Only completed checks belong under results.
 
-## Completed
+## 0.1.0-alpha02 UI update
+
+The redesigned Compose UI passed 20 JVM tests and 8 instrumentation tests on Pixel 7 / Android 17. Settings/all-mode behavior, six result messages, cancellation UI, system Back, actual Activity recreation, native loading and adaptive/monochrome icon rendering were checked. Screenshots cover RU/EN, light/dark/dynamic colors and a 320 dp Compose area with 200% font. Lint: 0 errors, 34 warnings. See [UI-IMPLEMENTATION.md](UI-IMPLEMENTATION.md) for scope and remaining limitations. These are software/UI checks, not physical Air vibration or battery measurements.
+
+## Earlier completed checks
 
 - Pixel 7 connected over Wi-Fi ADB: Android 17, arm64-v8a.
 - Initial debug APK installed and MainActivity launched.

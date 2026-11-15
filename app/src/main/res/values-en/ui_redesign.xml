@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="ui_notifications_on_band">Notifications on your band</string>
+    <string name="ui_ready_to_send">Ready to send</string>
+    <string name="ui_relay_off">Notifications are off</string>
+    <string name="ui_your_band">Your band</string>
+    <string name="ui_test_vibration">Test vibration</string>
+    <string name="ui_what_to_send">What to send</string>
+    <string name="ui_apps">Apps</string>
+    <string name="ui_all_apps">All apps</string>
+    <string name="ui_including_new_apps">Including newly installed apps</string>
+    <string name="ui_apps_title">Which apps?</string>
+    <string name="ui_apps_subtitle">Choose only what matters.</string>
+    <string name="ui_find_app">Find an app</string>
+    <string name="ui_choose_apps">Choose apps</string>
+    <string name="ui_done">Done</string>
+    <string name="ui_back">Back</string>
+    <string name="ui_home">Home</string>
+    <string name="ui_signal_hint">Your band will give a short signal when a new notification arrives.</string>
+    <string name="ui_felt_signal">Did you feel the signal?</string>
+    <string name="ui_yes_felt">Yes, it worked</string>
+    <string name="ui_no">No</string>
+    <string name="ui_no_vibration">No vibration</string>
+    <string name="ui_check_band">Check your band</string>
+    <string name="ui_move_closer">Bring your band close to your phone.</string>
+    <string name="ui_check_bluetooth">Make sure Bluetooth is on.</string>
+    <string name="ui_wait_sync">Wait for Google Health to finish syncing.</string>
+    <string name="ui_check_strength">If there is no signal, check vibration strength in Google Health.</string>
+    <string name="ui_test_again">Test again</string>
+    <string name="ui_setup_help">Set up AirNoti</string>
+    <string name="ui_allow_notifications">Allow notification access</string>
+    <string name="ui_bluetooth_reason">Bluetooth is needed to send a signal from your phone to your band.</string>
+    <string name="ui_notification_reason">Find AirNoti in Android settings and allow notification access.</string>
+    <string name="ui_open_settings">Open settings</string>
+    <string name="ui_pair_first">First pair Fitbit Air in Google Health on this phone.</string>
+    <string name="ui_strength_health">Use Google Health setting</string>
+    <string name="ui_strength_default_note">Uses the current vibration strength of your band.</string>
+    <string name="ui_strength_change_note">The next signal will change the band-wide vibration setting, including for Google Health.</string>
+    <string name="ui_privacy_note">AirNoti works on your phone without an account. Notification text is not stored.</string>
+    <string name="ui_step">Step %1$d of %2$d</string>
+    <string name="ui_selected_apps">Selected apps: %1$d</string>
+<string name="ui_enable_bluetooth">Turn on Bluetooth</string><string name="ui_test_cancelled">Sending was cancelled or has not started.</string></resources>
