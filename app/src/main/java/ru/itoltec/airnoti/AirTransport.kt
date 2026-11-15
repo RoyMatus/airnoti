@@ -47,6 +47,8 @@ class AirTransport(private val context: Context) {
     @Volatile private var muted = false
     private var reply: ((Result) -> Unit)? = null
     private var strength = 0
+    private var phase = "idle"
+    private fun trace(message: String) { (context.applicationContext as? AirNotiApp)?.trace("transport $message") }
 
     suspend fun tap(address: String, requestedStrength: Int): Result = suspendCancellableCoroutine { continuation ->
         check(Looper.myLooper() == Looper.getMainLooper())
@@ -54,6 +56,7 @@ class AirTransport(private val context: Context) {
         reply = { if (continuation.isActive) continuation.resume(it) }
         continuation.invokeOnCancellation { handler.post { cancel() } }
         strength = requestedStrength
+        phase = "connect"
         sent = false; started = false; finishing = false; muted = false
         try {
             val adapter = context.getSystemService(BluetoothManager::class.java).adapter
@@ -73,10 +76,13 @@ class AirTransport(private val context: Context) {
     } }
     private val callback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) = dispatch(g) {
+            trace("connection status=$status state=$newState")
             if (status != GATT_SUCCESS || newState == BluetoothProfile.STATE_DISCONNECTED) finish(if (sent) Result.UNKNOWN else Result.UNAVAILABLE)
             else if (newState == BluetoothProfile.STATE_CONNECTED && !g.discoverServices()) finish(Result.FAILED)
         }
         override fun onServicesDiscovered(g: BluetoothGatt, status: Int) = dispatch(g) {
+            phase = "subscribe"
+            trace("services status=$status")
             val rx = g.getService(SERVICE)?.getCharacteristic(RX)
             val descriptor = rx?.getDescriptor(CCCD)
             if (status != GATT_SUCCESS || rx == null || descriptor == null || !g.setCharacteristicNotification(rx, true)) finish(Result.FAILED)
@@ -87,6 +93,7 @@ class AirTransport(private val context: Context) {
             }
         }
         override fun onDescriptorWrite(g: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) = dispatch(g) {
+            trace("subscription status=$status")
             if (status != GATT_SUCCESS) finish(Result.FAILED) else waitForQuiet(g, SystemClock.elapsedRealtime())
         }
         override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) = dispatch(g) { receive(c, value) }
@@ -119,6 +126,7 @@ class AirTransport(private val context: Context) {
         }, 700)
     }
     private fun startStack(g: BluetoothGatt, handoff: Boolean = false, outcome: Result = Result.FAILED) {
+        phase = if (handoff) "handoff" else "handshake"
         try {
             Native.init()
             val tx = TxSink().also { sink = it }
@@ -143,6 +151,7 @@ class AirTransport(private val context: Context) {
             } else {
                 val coap = CoapEndpoint().also { endpoint = it; it.attach(newStack) }
                 subscriptions.add(newStack.dtlsEventObservable.subscribe({ state -> dispatch(g) {
+                    trace("dtls state=${state.state}")
                     if (stack !== newStack || finishing) return@dispatch
                     if (state.state == TLS_STATE_SESSION && !started) {
                         started = true
@@ -159,23 +168,28 @@ class AirTransport(private val context: Context) {
         OutgoingRequestBuilder("/settings", Method.PUT).expectSuccess(false).forceNonBlockwise(true).maxResendCount(0)
             .body(byteArrayOf(10, 1, 1)).build()
     ).timeout(3, TimeUnit.SECONDS).flatMap { response -> response.body.asData().map { bytes ->
+        trace("read response=${response.responseCode} length=${bytes.size}")
         check(response.responseCode.responseClass.toInt() == 2)
         check(bytes.contentEquals(HapticProtocol.write(2)) || bytes.contentEquals(HapticProtocol.write(3)))
         bytes.last().toInt()
     } }
     private fun command(coap: CoapEndpoint) {
+        phase = "read_initial"
         subscriptions.add(read(coap).observeOn(io.reactivex.android.schedulers.AndroidSchedulers.mainThread()).flatMap { original ->
             check(endpoint === coap && !finishing)
             val target = if (strength == 0) original else strength
             val body = if (original == target) HapticProtocol.tap(target) else HapticProtocol.write(target)
             // No resend: even a missing response may mean the command reached the motor.
             sent = true
+            phase = "post"
             coap.responseFor(OutgoingRequestBuilder("/settings", Method.POST).expectSuccess(false).forceNonBlockwise(true)
                 .maxResendCount(0).body(body).build()).timeout(3, TimeUnit.SECONDS).flatMap { response ->
                 check(response.responseCode.responseClass.toInt() == 2)
+                phase = "verify"
                 read(coap).map { verified -> check(verified == target); true }
             }
-        }.subscribe({ handler.post { if (endpoint === coap) finish(Result.VERIFIED) } }, {
+        }.subscribe({ handler.post { if (endpoint === coap) finish(Result.VERIFIED) } }, { error ->
+            trace("command_error phase=$phase type=${error.javaClass.simpleName}")
             handler.post { if (endpoint === coap) finish(if (sent) Result.UNKNOWN else Result.FAILED) }
         }))
     }
@@ -189,6 +203,7 @@ class AirTransport(private val context: Context) {
         if (!accepted) { writing = false; finish(if (sent) Result.UNKNOWN else Result.FAILED) }
     }
     private fun finish(requestedResult: Result) {
+        trace("finish phase=$phase sent=$sent result=$requestedResult")
         val result = if (sent && requestedResult in setOf(Result.FAILED, Result.UNAVAILABLE, Result.BUSY)) Result.UNKNOWN else requestedResult
         if (reply == null) return
         if (finishing) { complete(if (result == Result.UNKNOWN) result else Result.HANDOFF_UNCONFIRMED); return }

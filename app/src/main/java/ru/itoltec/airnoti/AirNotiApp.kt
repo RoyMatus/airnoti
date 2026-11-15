@@ -11,6 +11,10 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 class AirNotiApp : Application() {
+    enum class SendOrigin { MANUAL, NOTIFICATION }
+    internal fun trace(message: String) {
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) android.util.Log.d("AirNotiRelay", message)
+    }
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     lateinit var preferences: SettingsRepository
     lateinit var settings: StateFlow<Settings>
@@ -56,12 +60,13 @@ class AirNotiApp : Application() {
     }
     fun bluetoothPermission(): Boolean = Build.VERSION.SDK_INT < 31 || checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
     fun bluetoothReady(): Boolean = bluetoothPermission() && runCatching { getSystemService(BluetoothManager::class.java).adapter?.isEnabled == true }.getOrDefault(false)
-    fun send() {
+    fun send(origin: SendOrigin = SendOrigin.MANUAL) {
         val config = settings.value
         if (stopped || !config.enabled || config.address.isBlank() || !bluetoothReady() || operation?.isActive == true) return
         operation = scope.launch {
+            trace("send_start origin=$origin")
             sending.value = true; result.value = null
-            try { result.value = transport.tap(config.address, config.strength) }
+            try { result.value = transport.tap(config.address, config.strength); trace("send_result origin=$origin result=${result.value}") }
             finally { sending.value = false }
         }
     }

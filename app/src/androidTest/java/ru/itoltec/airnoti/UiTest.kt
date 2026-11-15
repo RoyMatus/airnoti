@@ -25,7 +25,6 @@ class UiTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
     private val sample = AirUiState(Settings(enabled = true, address = "test-band", packages = setOf("sample.chat")),
         hasBluetooth = true, bluetoothOn = true, access = true, listener = true,
-        apps = listOf(UiApp("sample.chat", "Сообщения"), UiApp("sample.mail", "Почта")),
         devices = listOf(BandEntry("test-band", "Мой браслет")))
     private fun show(content: @Composable () -> Unit) { rule.activity.runOnUiThread { rule.activity.setContent(content = content) }; rule.waitForIdle() }
     private fun text(id: Int) = rule.activity.getString(id)
@@ -33,23 +32,14 @@ class UiTest {
         val bitmap = rule.onRoot().captureToImage().asAndroidBitmap()
         File(rule.activity.filesDir, "ui-$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
-    @Test fun allModePreservesIndividualSelectionAndSearchesPackage() {
-        var state by mutableStateOf(sample)
-        show { AirTheme { Surface { AirInterface(state, AirActions(all = { state = state.copy(settings = state.settings.copy(all = it)) })) } } }
-        rule.onNodeWithTag("apps").performScrollTo().performClick()
-        rule.onNodeWithTag("app:sample.chat").performScrollTo().assertIsOn()
-        rule.onNodeWithTag("all").performScrollTo().performClick()
-        rule.onNodeWithTag("app:sample.mail").performScrollTo().assertIsOn().assertIsNotEnabled()
-        rule.onNodeWithTag("all").performScrollTo().performClick()
-        rule.onNodeWithTag("app:sample.chat").performScrollTo().assertIsOn()
-        rule.onNodeWithTag("app:sample.mail").performScrollTo().assertIsOff()
-        rule.onNodeWithTag("search").performScrollTo().performTextInput("sample.mail")
-        rule.onNodeWithTag("app:sample.chat").assertDoesNotExist()
-        rule.onNodeWithTag("app:sample.mail").assertExists()
-        Espresso.pressBack() // dismiss keyboard
-        Espresso.pressBack() // system navigation
-        rule.onNodeWithTag("relay").assertExists()
-        assertEquals(setOf("sample.chat"), state.settings.packages)
+    @Test fun noAppSelectionIsNeededWithLegacyEmptySettings() {
+        val state = sample.copy(settings = sample.settings.copy(all = false, packages = emptySet()))
+        show { AirTheme { Surface { AirInterface(state, AirActions()) } } }
+        rule.onNodeWithText(text(R.string.ui_ready_to_send)).assertExists()
+        rule.onNodeWithTag("apps").assertDoesNotExist()
+        rule.onNodeWithTag("all").assertDoesNotExist()
+        rule.onNodeWithTag("test").performScrollTo().assertIsEnabled()
+        rule.onNodeWithText(text(R.string.ui_signal_hint)).performScrollTo().assertExists()
     }
     @Test fun deniedPermissionAndAllResultsRemainTruthful() {
         var state by mutableStateOf(sample.copy(hasBluetooth = false))
@@ -64,6 +54,21 @@ class UiTest {
             rule.onNodeWithTag("result").performScrollTo().assertTextEquals(text(result.message()))
         }
     }
+    @Test fun notificationPermissionExplainsWhyTestIsNotForwarding() {
+        var state by mutableStateOf(sample.copy(access = false, listener = false))
+        var requests = 0
+        show { AirTheme { Surface { AirInterface(state, AirActions(notifications = { requests++ })) } } }
+        rule.onNodeWithText(text(R.string.ui_relay_permission_missing)).assertExists()
+        rule.onNodeWithText(text(R.string.ui_grant_notification_access)).performScrollTo().performClick()
+        assertEquals(1, requests)
+        rule.onNodeWithText(text(R.string.ui_relay_permission_missing)).assertExists()
+        rule.onNodeWithTag("test").performScrollTo().assertIsEnabled()
+        rule.onNodeWithText(text(R.string.ui_manual_test_only)).performScrollTo().assertExists()
+        rule.runOnUiThread { state = sample }
+        rule.onNodeWithText(text(R.string.ui_grant_notification_access)).assertDoesNotExist()
+        rule.onNodeWithText(text(R.string.ui_manual_test_only)).assertDoesNotExist()
+        rule.onNodeWithText(text(R.string.ui_ready_to_send)).performScrollTo().assertExists()
+    }
     @Test fun emptySelectionTestAndCancellationNeverShowFakeSuccess() {
         var state by mutableStateOf(sample.copy(settings = sample.settings.copy(packages = emptySet())))
         var sends = 0
@@ -77,18 +82,17 @@ class UiTest {
         Espresso.pressBack()
         rule.onNodeWithTag("test").performScrollTo().assertIsNotEnabled()
     }
-    @Test fun navigationAndQuerySurviveSavedStateRestore() {
+    @Test fun helpNavigationSurvivesRecreationWithoutChangingSettings() {
         val app = rule.activity.application as AirNotiApp
         val before = kotlinx.coroutines.runBlocking { app.preferences.flow.first() }
         screenshot("device-home")
-        rule.onNodeWithTag("apps").performScrollTo().performClick()
-        screenshot("device-apps")
-        rule.onNodeWithTag("search").performScrollTo().performTextInput("airnoti.unmatched.query")
+        rule.onNodeWithText(text(R.string.help)).performScrollTo().performClick()
+        rule.onNodeWithText(text(R.string.strength)).performScrollTo().performClick()
         rule.activityRule.scenario.recreate()
-        rule.onNodeWithTag("search").performScrollTo().assertTextContains("airnoti.unmatched.query")
-        rule.onNodeWithText(text(R.string.ui_apps_title)).performScrollTo().assertExists()
-        val after = kotlinx.coroutines.runBlocking { app.preferences.flow.first() }
-        assertEquals(before, after)
+        rule.onNodeWithText(text(R.string.ui_strength_health)).assertExists()
+        Espresso.pressBack()
+        rule.onNodeWithText(text(R.string.ui_setup_help)).assertExists()
+        assertEquals(before, kotlinx.coroutines.runBlocking { app.preferences.flow.first() })
     }
     @Test fun lightDarkLargeAndEnglishScreens() {
         for ((name, night, scale) in listOf(Triple("light", false, 1f), Triple("dark", true, 1f), Triple("large", false, 2f), Triple("english", false, 1f))) {
@@ -107,11 +111,6 @@ class UiTest {
             }
             rule.onNodeWithText("AirNoti").assertIsDisplayed()
             screenshot(name)
-            rule.onNodeWithTag("apps").performScrollTo().performClick()
-            rule.onNodeWithTag("search").performScrollTo().assertIsDisplayed()
-            screenshot("$name-apps")
-            rule.onNodeWithTag("all").performScrollTo().assertHasClickAction()
-            Espresso.pressBack()
             rule.onNodeWithText(localizedContext.getString(R.string.help)).performScrollTo().performClick()
             rule.onNodeWithText(localizedContext.getString(R.string.ui_setup_help)).performScrollTo().performClick()
             screenshot("$name-setup")

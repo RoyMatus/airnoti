@@ -31,9 +31,9 @@
     <string name="strength_low">Слабая</string>
     <string name="strength_high">Сильная</string>
     <string name="strength_note">«Слабая» и «Сильная» изменяют общую настройку браслета при следующем сигнале. «По умолчанию» сохраняет значение Google Health.</string>
-    <string name="alpha_note">Экспериментальная версия. Работа на физическом Air ещё не проверена. Неофициальное приложение, не связано с Google или Fitbit.</string>
+    <string name="alpha_note">Экспериментальная версия. Доставка сигнала не гарантируется. Неофициальное приложение, не связано с Google или Fitbit.</string>
     <string name="close">Закрыть</string>
-    <string name="setup_note">Разрешите Bluetooth и доступ к уведомлениям, выберите Air и приложения. Для теста включите главный переключатель.</string>
+    <string name="setup_note">Разрешите Bluetooth и получение уведомлений, выберите Air и включите главный переключатель. Отдельно выбирать приложения не нужно.</string>
     <string name="restricted_note">Если Android ограничил доступ: откройте сведения об AirNoti и используйте системный пункт «Разрешить ограниченные настройки», если он доступен. Отключать Play Protect не нужно.</string>
     <string name="app_info">Сведения о приложении</string>
     <string name="help">Помощь</string>

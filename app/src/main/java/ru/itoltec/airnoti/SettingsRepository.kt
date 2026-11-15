@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.*
 
 private val Context.settingsStore by preferencesDataStore("airnoti")
 data class Settings(val enabled: Boolean = false, val all: Boolean = false, val packages: Set<String> = emptySet(), val address: String = "", val strength: Int = 0) {
-    fun accepts(pkg: String) = enabled && (all || pkg in packages)
+    // Legacy all/packages are retained, but no longer restrict forwarding.
+    fun accepts(@Suppress("UNUSED_PARAMETER") pkg: String) = enabled
 }
 class SettingsRepository(context: Context) {
     private val store = context.settingsStore

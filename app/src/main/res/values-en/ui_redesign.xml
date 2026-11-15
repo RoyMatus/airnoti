@@ -6,17 +6,17 @@
     <string name="ui_your_band">Your band</string>
     <string name="ui_test_vibration">Test vibration</string>
     <string name="ui_what_to_send">What to send</string>
-    <string name="ui_apps">Apps</string>
+    <string name="ui_apps">Which apps</string>
     <string name="ui_all_apps">All apps</string>
     <string name="ui_including_new_apps">Including newly installed apps</string>
     <string name="ui_apps_title">Which apps?</string>
-    <string name="ui_apps_subtitle">Choose only what matters.</string>
+    <string name="ui_apps_subtitle">Select the apps whose notifications should trigger a signal.</string>
     <string name="ui_find_app">Find an app</string>
     <string name="ui_choose_apps">Choose apps</string>
     <string name="ui_done">Done</string>
     <string name="ui_back">Back</string>
     <string name="ui_home">Home</string>
-    <string name="ui_signal_hint">Your band will give a short signal when a new notification arrives.</string>
+    <string name="ui_signal_hint">A new phone notification means a short band signal. Android controls which notifications appear.</string>
     <string name="ui_felt_signal">Did you feel the signal?</string>
     <string name="ui_yes_felt">Yes, it worked</string>
     <string name="ui_no">No</string>
@@ -30,7 +30,7 @@
     <string name="ui_setup_help">Set up AirNoti</string>
     <string name="ui_allow_notifications">Allow notification access</string>
     <string name="ui_bluetooth_reason">Bluetooth is needed to send a signal from your phone to your band.</string>
-    <string name="ui_notification_reason">Find AirNoti in Android settings and allow notification access.</string>
+    <string name="ui_notification_reason">On the Android screen, allow access for AirNoti and confirm. Forwarding cannot work without it.</string>
     <string name="ui_open_settings">Open settings</string>
     <string name="ui_pair_first">First pair Fitbit Air in Google Health on this phone.</string>
     <string name="ui_strength_health">Use Google Health setting</string>
@@ -39,4 +39,9 @@
     <string name="ui_privacy_note">AirNoti works on your phone without an account. Notification text is not stored.</string>
     <string name="ui_step">Step %1$d of %2$d</string>
     <string name="ui_selected_apps">Selected apps: %1$d</string>
-<string name="ui_enable_bluetooth">Turn on Bluetooth</string><string name="ui_test_cancelled">Sending was cancelled or has not started.</string></resources>
+<string name="ui_enable_bluetooth">Turn on Bluetooth</string><string name="ui_test_cancelled">Sending was cancelled or has not started.</string>    <string name="ui_relay_permission_missing">Forwarding is not working: Android permission needed</string>
+    <string name="ui_grant_notification_access">Allow receiving notifications</string>
+    <string name="ui_permission_explanation">Allow AirNoti to receive phone notifications once. New notifications will then trigger a signal on the band.</string>
+    <string name="ui_manual_test_only">This button only tests the band. To receive signals from Telegram and other apps, first allow notification access.</string>
+    <string name="ui_reconnect_listener">Connect forwarding</string>
+<string name="ui_setup_complete">Setup is complete. Enable the switch on the home screen to forward new phone notifications to the band.</string></resources>

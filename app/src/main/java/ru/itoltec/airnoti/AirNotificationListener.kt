@@ -23,8 +23,12 @@ class AirNotificationListener : NotificationListenerService() {
     override fun onListenerConnected() {
         connectedAt = System.currentTimeMillis()
         policy.clear(); queue.clear()
-        activeNotifications?.forEach { policy.seed(extract(it)) }
+        activeNotifications?.forEach {
+            policy.seed(extract(it))
+            if (it.packageName == "org.telegram.messenger") app.trace("telegram_snapshot flags=${it.notification.flags} progressKey=${it.notification.extras.containsKey(Notification.EXTRA_PROGRESS)} progressMax=${it.notification.extras.getInt(Notification.EXTRA_PROGRESS_MAX)}")
+        }
         app.listenerConnected.value = true
+        app.trace("listener_connected")
         app.refreshDevice()
     }
     override fun onListenerDisconnected() {
@@ -33,19 +37,20 @@ class AirNotificationListener : NotificationListenerService() {
     }
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (connectedAt == Long.MAX_VALUE) return
-        if (packageManager.getLaunchIntentForPackage(sbn.packageName) == null) return
         val notice = extract(sbn)
-        if (!policy.accept(notice, app.settings.value, connectedAt)) return
+        val accepted = policy.accept(notice, app.settings.value, connectedAt)
+        app.trace("notification telegram=${sbn.packageName == "org.telegram.messenger"} accepted=$accepted enabled=${app.settings.value.enabled} selected=${app.settings.value.accepts(sbn.packageName)} service=${notice.service} flags=${sbn.notification.flags} progressMax=${sbn.notification.extras.getInt(Notification.EXTRA_PROGRESS_MAX)}")
+        if (!accepted) return
         queue.offer(QueuedNotice(notice.key, notice.pkg, notice.group, notice.summary, SystemClock.elapsedRealtime()))
         if (drain?.isActive != true) drain = scope.launch {
             while (queue.size > 0) {
                 delay(700)
-                if (!app.sending.value && queue.take(SystemClock.elapsedRealtime(), app.settings.value)) app.send()
+                if (!app.sending.value && queue.take(SystemClock.elapsedRealtime(), app.settings.value)) app.send(AirNotiApp.SendOrigin.NOTIFICATION)
                 // Expiry also applies while an operation is running; take will run once it ends.
             }
         }
     }
-    private fun extract(sbn: StatusBarNotification): Notice {
+    internal fun extract(sbn: StatusBarNotification): Notice {
         val n = sbn.notification
         val digest = MessageDigest.getInstance("SHA-256").apply { update(salt) }
         fun add(value: CharSequence?) {
@@ -63,7 +68,9 @@ class AirNotificationListener : NotificationListenerService() {
             n.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES)?.forEach(::add)
         }
         val service = n.flags and (Notification.FLAG_ONGOING_EVENT or Notification.FLAG_FOREGROUND_SERVICE) != 0 ||
-            n.extras.containsKey(Notification.EXTRA_PROGRESS) || n.category in setOf(Notification.CATEGORY_SERVICE, Notification.CATEGORY_TRANSPORT)
+            n.extras.getInt(Notification.EXTRA_PROGRESS_MAX, 0) > 0 ||
+            n.extras.getBoolean(Notification.EXTRA_PROGRESS_INDETERMINATE, false) ||
+            n.category in setOf(Notification.CATEGORY_SERVICE, Notification.CATEGORY_TRANSPORT)
         return Notice(sbn.key, sbn.packageName, digest.digest().joinToString("") { "%02x".format(it) },
             if (sbn.isGroup) sbn.groupKey else null, n.flags and Notification.FLAG_GROUP_SUMMARY != 0, service, sbn.postTime)
     }

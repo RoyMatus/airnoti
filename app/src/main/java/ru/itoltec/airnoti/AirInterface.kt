@@ -25,13 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-internal data class UiApp(val pkg: String, val title: String)
 internal data class BandEntry(val address: String, val name: String)
 internal data class AirUiState(
     val settings: Settings = Settings(), val sending: Boolean = false,
     val result: AirTransport.Result? = null, val hasBluetooth: Boolean = false,
     val bluetoothOn: Boolean = false, val access: Boolean = false, val listener: Boolean = false,
-    val apps: List<UiApp> = emptyList(), val devices: List<BandEntry> = emptyList()
+    val devices: List<BandEntry> = emptyList()
 ) {
     val canTest get() = settings.enabled && hasBluetooth && bluetoothOn && settings.address.isNotBlank() && !sending
     val status get() = when {
@@ -40,17 +39,15 @@ internal data class AirUiState(
         settings.address.isBlank() -> R.string.device_missing
         !settings.enabled -> R.string.ui_relay_off
         sending -> R.string.sending
-        !access -> R.string.notification_access
+        !access -> R.string.ui_relay_permission_missing
         !listener -> R.string.listener_wait
         result == AirTransport.Result.UNAVAILABLE -> R.string.unavailable
         result == AirTransport.Result.FAILED -> R.string.failed
-        !settings.all && apps.none { it.pkg in settings.packages } -> R.string.ui_choose_apps
         else -> R.string.ui_ready_to_send
     }
 }
 internal data class AirActions(
     val enabled: (Boolean) -> Unit = {}, val send: () -> Unit = {}, val device: (String) -> Unit = {},
-    val all: (Boolean) -> Unit = {}, val select: (String, Boolean) -> Unit = { _, _ -> },
     val strength: (Int) -> Unit = {}, val bluetooth: () -> Unit = {},
     val notifications: () -> Unit = {}, val appInfo: () -> Unit = {}
 )
@@ -88,9 +85,8 @@ internal fun AirTransport.Result.message() = when (this) {
 }
 
 /** UI-only navigation and callbacks; no Bluetooth or persistence operations in preview/test content. */
-@Composable internal fun AirInterface(state: AirUiState, actions: AirActions, appIcon: @Composable (String) -> Unit = {}) {
+@Composable internal fun AirInterface(state: AirUiState, actions: AirActions) {
     var path by rememberSaveable { mutableStateOf("home") }
-    var query by rememberSaveable { mutableStateOf("") }
     val page = path.substringAfterLast('/')
     fun go(next: String) { path += "/$next" }
     fun back() { path = path.substringBeforeLast('/', "home") }
@@ -98,21 +94,17 @@ internal fun AirTransport.Result.message() = when (this) {
     val configuration = LocalConfiguration.current
     val compact = configuration.screenWidthDp < 380
     val large = configuration.fontScale >= 1.5f || compact
-    val selected = state.apps.filter { it.pkg in state.settings.packages }
-    val summary = when {
-        state.settings.all -> stringResource(R.string.ui_all_apps)
-        selected.isEmpty() -> stringResource(R.string.nothing_selected)
-        selected.size <= 2 -> selected.joinToString { it.title }
-        else -> stringResource(R.string.ui_selected_apps, selected.size)
-    }
     val recovery: @Composable () -> Unit = {
         when {
             !state.hasBluetooth -> ActionButton(R.string.grant_bluetooth, actions.bluetooth)
             !state.bluetoothOn -> ActionButton(R.string.ui_enable_bluetooth, actions.bluetooth)
             state.settings.address.isBlank() -> ActionButton(R.string.choose_device, { go("devices") })
-            !state.access || !state.listener -> ActionButton(R.string.notification_access, actions.notifications)
+            !state.access -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.ui_permission_explanation), style = MaterialTheme.typography.bodyMedium)
+                ActionButton(R.string.ui_grant_notification_access, actions.notifications)
+            }
+            !state.listener -> ActionButton(R.string.ui_reconnect_listener, actions.notifications)
             state.result == AirTransport.Result.UNAVAILABLE || state.result == AirTransport.Result.FAILED -> ActionButton(R.string.ui_no_vibration, { go("trouble") })
-            !state.settings.all && selected.isEmpty() -> ActionButton(R.string.ui_choose_apps, { go("apps") })
         }
     }
     key(page) {
@@ -128,7 +120,6 @@ internal fun AirTransport.Result.message() = when (this) {
                 } else Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     TextButton(onClick = { back() }) { Text(stringResource(R.string.ui_back)) }
                     Text(stringResource(when (page) {
-                        "apps" -> R.string.ui_apps_title
                         "devices" -> R.string.ui_your_band
                         "strength" -> R.string.strength
                         "setup" -> R.string.ui_setup_help
@@ -165,33 +156,9 @@ internal fun AirTransport.Result.message() = when (this) {
                             stringResource(R.string.ui_your_band), R.drawable.ic_ui_band, { go("devices") }, colored = false)
                     }
                     item { ActionButton(if (state.sending) R.string.sending else R.string.ui_test_vibration, { actions.send(); go("test") }, state.canTest, "test") }
+                    if (!state.access) item { Note(R.string.ui_manual_test_only) }
                     state.result?.let { result -> item { ResultText(result) } }
-                    item { Text(stringResource(R.string.ui_what_to_send), Modifier.padding(top = 12.dp), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                    item { LinkRow(stringResource(R.string.ui_apps), summary, R.drawable.ic_ui_apps, { go("apps") }, tag = "apps") }
                     item { Note(R.string.ui_signal_hint) }
-                }
-                "apps" -> {
-                    item { Note(R.string.ui_apps_subtitle) }
-                    item { Card(shape = RoundedCornerShape(22.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
-                        Column(Modifier.padding(16.dp)) {
-                            CheckRow(stringResource(R.string.ui_all_apps), state.settings.all, true, "all", actions.all)
-                            Note(R.string.ui_including_new_apps)
-                        }
-                    } }
-                    item { OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth().testTag("search"), label = { Text(stringResource(R.string.search)) }, singleLine = true, shape = RoundedCornerShape(18.dp)) }
-                    val filtered = state.apps.filter { it.title.contains(query, true) || it.pkg.contains(query, true) }
-                    if (filtered.isEmpty()) item { Note(R.string.no_matches) }
-                    items(filtered, key = { it.pkg }) { entry ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 68.dp).testTag("app:${entry.pkg}").toggleable(
-                            state.settings.all || entry.pkg in state.settings.packages, enabled = !state.settings.all, role = Role.Checkbox,
-                            onValueChange = { actions.select(entry.pkg, it) }), verticalAlignment = Alignment.CenterVertically) {
-                            appIcon(entry.pkg)
-                            Text(entry.title, Modifier.weight(1f).padding(horizontal = 14.dp))
-                            Checkbox(state.settings.all || entry.pkg in state.settings.packages, null, enabled = !state.settings.all)
-                        }
-                    }
-                    item { Text(if (state.settings.all) stringResource(R.string.ui_all_apps) else stringResource(R.string.ui_selected_apps, selected.size), style = MaterialTheme.typography.bodyMedium) }
-                    item { ActionButton(R.string.ui_done, { back() }) }
                 }
                 "devices" -> {
                     item { Note(R.string.device_hint) }
@@ -229,9 +196,9 @@ internal fun AirTransport.Result.message() = when (this) {
                         // Steps derive from real state. Clicking a system action never marks a step complete.
                         when {
                             !state.hasBluetooth || !state.bluetoothOn -> { Note(R.string.ui_bluetooth_reason); recovery() }
-                            !state.access -> { Note(R.string.ui_notification_reason); ActionButton(R.string.notification_access, actions.notifications); Note(R.string.restricted_note); ActionButton(R.string.app_info, actions.appInfo) }
+                            !state.access -> { Note(R.string.ui_notification_reason); ActionButton(R.string.ui_grant_notification_access, actions.notifications); Note(R.string.restricted_note); ActionButton(R.string.app_info, actions.appInfo) }
                             state.settings.address.isBlank() -> { Note(R.string.ui_pair_first); ActionButton(R.string.choose_device, { go("devices") }) }
-                            else -> { Note(R.string.ui_apps_subtitle); ActionButton(R.string.ui_choose_apps, { go("apps") }); ActionButton(R.string.ui_home, { path = "home" }) }
+                            else -> { Note(R.string.ui_setup_complete); ActionButton(R.string.ui_home, { path = "home" }) }
                         }
                         }
                     }
@@ -242,6 +209,7 @@ internal fun AirTransport.Result.message() = when (this) {
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         if (state.sending) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.sending)) }
                         else state.result?.let { ResultText(it) } ?: Note(R.string.ui_test_cancelled)
+                        if (!state.access) Note(R.string.ui_manual_test_only)
                         }
                     }
                     if (!state.sending && state.result != null) {
@@ -270,11 +238,6 @@ internal fun AirTransport.Result.message() = when (this) {
 }
 @Composable private fun ActionButton(label: Int, action: () -> Unit, enabled: Boolean = true, tag: String = "action") {
     Button(onClick = action, enabled = enabled, modifier = Modifier.fillMaxWidth().heightIn(min = 58.dp).testTag(tag), shape = RoundedCornerShape(28.dp), contentPadding = PaddingValues(18.dp, 14.dp)) { Text(stringResource(label)) }
-}
-@Composable private fun CheckRow(label: String, checked: Boolean, enabled: Boolean, tag: String, change: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(tag).toggleable(checked, enabled = enabled, role = Role.Checkbox, onValueChange = change), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, Modifier.weight(1f).padding(end = 12.dp)); Checkbox(checked, null, enabled = enabled)
-    }
 }
 @Composable private fun LinkRow(title: String, subtitle: String? = null, icon: Int? = null, onClick: () -> Unit, colored: Boolean = true, tag: String = "link") {
     val large = LocalConfiguration.current.fontScale >= 1.5f

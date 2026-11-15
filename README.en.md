@@ -4,9 +4,9 @@
 
 [Download APK / releases](https://github.com/RoyMatus/airnoti/releases)
 
-A small, unofficial Android notification bridge for Google Fitbit Air: selected phone notifications trigger a short wrist signal. Native Kotlin and Jetpack Compose Material 3, with a simple home screen and separate selection/help screens. Not affiliated with Google or Fitbit.
+A small, unofficial Android notification bridge for Google Fitbit Air: new phone notifications trigger a short wrist signal. Native Kotlin and Jetpack Compose Material 3, with a simple home screen and band selection and help. Not affiliated with Google or Fitbit.
 
-**Experimental alpha.** The app uses a reverse-engineered protocol. A confirmed command and settings readback do not prove a physical vibration. AirNoti's physical haptic delivery and Google Health coexistence have not yet been verified. Upstream results are not AirNoti test results.
+**Experimental alpha.** The app uses a reverse-engineered protocol. A confirmed command and settings readback do not prove a physical vibration. Physical vibration from notification forwarding has been confirmed by the wearer on one Pixel 7 / Air setup; Google Health coexistence still needs verification. Upstream results are not AirNoti test results.
 
 ## Install and enable
 
@@ -14,10 +14,10 @@ A small, unofficial Android notification bridge for Google Fitbit Air: selected 
 2. Pair Fitbit Air normally in Google Health on this phone. Do not reset or unpair it.
 3. Open AirNoti. The contextual home-screen action requests Bluetooth access and opens notification access settings. Guided help is under **Help → How to set up AirNoti**. Only the main switch enables forwarding. If Android restricts notification access, use the documented “Allow restricted settings” option in app information when available; disabling Play Protect is not required.
 4. A single paired device named Fitbit Air is selected automatically, without scanning. Choose manually if there are multiple candidates or your Air was renamed. The selector lists paired devices and their addresses; other models are not supported.
-5. Open **Apps**, choose individual apps or enable **All apps**. Fresh installations start with forwarding off, All apps off and no selection. Existing saved choices are retained. Enable the main switch before using **Test vibration**.
+5. Enable the main switch. All new phone notifications, including service and progress notifications, are accepted automatically. There is no app selector. The Test vibration button only tests the band, not Android notification permission.
 6. Confirm that you actually feel the signal, then check Google Health synchronization. An unknown result may mean the command arrived: check vibration strength in Google Health before testing again. There is no automatic retry of an uncertain command.
 
-All apps includes newly installed launchable apps. It disables individual checkboxes without overwriting the saved individual selection. Service-only packages are excluded; preinstalled user-facing apps remain visible. Search matches app names and package names. An empty individual selection forwards nothing but does not prevent manual testing.
+Fresh installations start with forwarding off. Once access is granted and forwarding is enabled, notifications from all apps are accepted, including packages without launcher activities. Android controls which apps may show notifications. Legacy saved app choices no longer restrict forwarding. Identical reposts, AirNoti's own events and duplicate group summaries do not trigger a separate signal.
 
 **Help → Vibration strength → As in Google Health** reads the current strength, sends one atomic alternate/restore settings command, then checks the final setting. Low and High change the band's global strength on the next signal, including its use by Google Health. No arbitrary motor patterns or duration are claimed. Alarms are not read or changed.
 
@@ -29,15 +29,15 @@ All apps includes newly installed launchable apps. It disables individual checkb
 - Upstream reports Air firmware `67.20001.253.2` with Pixel 7 Pro. This is **not** an AirNoti hardware verification. Firmware changes may break the protocol.
 - An Android APK does not run on iPhone. iOS is outside this project.
 
-## Checks for 0.1.0-alpha02
+## Checks for 0.1.0-alpha03
 
-The redesigned Compose UI and launcher icon passed 20 JVM tests and 8 Android instrumentation tests on Pixel 7 / Android 17. These cover app selection, settings persistence, navigation restoration, result states, JNI loading and icon rendering. Screenshots were checked in Russian/English, light/dark themes, dynamic colors, and a 320 dp Compose area at 200% font scale. Android Lint: 0 errors, 34 warnings.
+App selection and service-notification filtering were removed. A Telegram filtering defect was identified: the old code treated even zero-valued progress metadata as a service notification. On Pixel 7 / Android 17, a real Telegram notification was received, automatically dispatched and acknowledged by the band. The wearer confirmed physical vibration without pressing the manual test button. A local Android notification also completed the pipeline while AirNoti was in the background.
 
-Actual Air vibration, firmware compatibility, real SMS/messenger delivery, extended idle, out-of-range recovery, Google Health sync and battery consumption are **not verified**. Manual TalkBack speech and themed icons in actual OEM launchers remain untested. See the [UI implementation report](docs/UI-IMPLEMENTATION.md) and [validation / hardware test procedure](docs/VALIDATION.md).
+20 JVM tests and 12 instrumentation tests passed. Some connection attempts failed: delivery is not guaranteed. The tested Air firmware was not recorded. Extended idle, Google Health sync after a series of signals, range recovery and battery measurements remain outstanding. Manual TalkBack speech and OEM launcher themed icons remain untested. See [validation](docs/VALIDATION.md).
 
 ## Background behavior and limitations
 
-A system-bound `NotificationListenerService` receives notifications. Own, ongoing, foreground-service, progress and media/service notifications are filtered. Existing notifications are seeded on listener connection without replaying them. MessagingStyle messages are fingerprinted in memory using content, timestamp and sender so a new message under the same notification ID can be detected. Other identical updates under the same ID are deduplicated; indistinguishable new events can therefore be missed.
+A system-bound `NotificationListenerService` receives notifications. Ongoing, foreground-service, progress and media/service notifications are accepted too. AirNoti's own events and duplicates are excluded. Existing notifications are seeded on listener connection without replaying them. MessagingStyle messages are fingerprinted in memory using content, timestamp and sender so a new message under the same notification ID can be detected. Other identical updates under the same ID are deduplicated; indistinguishable new events can therefore be missed.
 
 Events merge over 700 ms, with at least 3 seconds between send starts. The queue is bounded to 16 events, with a 10-second expiry before sending. Group summaries are suppressed when a child was processed. Events are not stored on disk or replayed after a long absence; delivery is not guaranteed.
 
@@ -51,7 +51,7 @@ Busy synchronization causes a bounded wait or skipped event. Turning forwarding/
 
 ## Permissions and privacy
 
-Bluetooth Connect on Android 12+, legacy Bluetooth on Android 11, and user-enabled notification access. Package visibility is limited to apps with launcher activities; no QUERY_ALL_PACKAGES.
+Bluetooth Connect on Android 12+, legacy Bluetooth on Android 11, and user-enabled notification access. The app no longer queries installed applications; the launcher queries declaration was removed. No QUERY_ALL_PACKAGES.
 
 No INTERNET, READ_SMS, contacts, Accessibility, root, medical, location or scanning permissions. Notification texts, senders and verification codes are not stored or logged. Deduplication uses temporary in-memory fingerprints. DataStore stores switches, selected package names, device address and strength. Android backup is disabled. See the [privacy policy](PRIVACY.md).
 

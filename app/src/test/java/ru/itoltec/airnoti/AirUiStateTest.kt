@@ -6,7 +6,7 @@ import org.junit.Test
 class AirUiStateTest {
     private val ready = AirUiState(Settings(enabled = true, address = "band"), hasBluetooth = true, bluetoothOn = true, access = true, listener = true)
     @Test fun emptySelectionDoesNotBlockManualTest() {
-        assertEquals(R.string.ui_choose_apps, ready.status)
+        assertEquals(R.string.ui_ready_to_send, ready.status)
         assertTrue(ready.canTest)
         assertTrue(ready.copy(access = false, listener = false).canTest)
     }

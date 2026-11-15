@@ -6,7 +6,7 @@ AirNoti runs on the Android phone. No account, advertisements, analytics, remote
 
 With notification access, AirNoti receives notification metadata and may temporarily process title, text, message timestamp, sender and attachment URI to compute a salted SHA-256 fingerprint. It does not open attachment URIs. Content is not persisted or logged. Fingerprints exist only in process memory in a bounded cache (512 entries); pending alerts contain routing metadata only and expire before sending. No message content is sent to the band, only a haptic/settings command.
 
-DataStore persists the enabled state, all-apps state, selected package names, Bluetooth address and strength preference in app-private storage. Android backup is disabled. The installed-app list is used locally for selection. Uninstalling removes these settings; revoking notification access stops receiving notifications. Force stopping stops the app until reopened.
+DataStore persists the enabled state, Bluetooth address and strength preference in app-private storage. Legacy all-apps and selected-package settings may remain after upgrading but are no longer used to filter notifications. Android backup is disabled. The installed-app list is no longer queried. Uninstalling removes these settings; revoking notification access stops receiving notifications. Force stopping stops the app until reopened.
 
 No health data, SMS database, contacts or location are requested. Google Health remains a separate application with its own privacy practices. Diagnostic validation reports must not contain private notifications, pairing data or credentials.
 

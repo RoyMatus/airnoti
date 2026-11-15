@@ -6,17 +6,17 @@
     <string name="ui_your_band">Ваш браслет</string>
     <string name="ui_test_vibration">Проверить вибрацию</string>
     <string name="ui_what_to_send">Что передавать</string>
-    <string name="ui_apps">Приложения</string>
+    <string name="ui_apps">От каких приложений</string>
     <string name="ui_all_apps">Все приложения</string>
     <string name="ui_including_new_apps">Включая новые установленные</string>
     <string name="ui_apps_title">От каких приложений?</string>
-    <string name="ui_apps_subtitle">Выберите только то, что важно.</string>
+    <string name="ui_apps_subtitle">Отметьте приложения, от которых браслет должен подавать сигнал.</string>
     <string name="ui_find_app">Найти приложение</string>
     <string name="ui_choose_apps">Выберите приложения</string>
     <string name="ui_done">Готово</string>
     <string name="ui_back">Назад</string>
     <string name="ui_home">На главный</string>
-    <string name="ui_signal_hint">Браслет подаст короткий сигнал, когда придёт новое уведомление.</string>
+    <string name="ui_signal_hint">Новое уведомление на телефоне — короткий сигнал на браслете. Какие уведомления показывать, решает Android.</string>
     <string name="ui_felt_signal">Почувствовали сигнал?</string>
     <string name="ui_yes_felt">Да, всё хорошо</string>
     <string name="ui_no">Нет</string>
@@ -30,7 +30,7 @@
     <string name="ui_setup_help">Как настроить AirNoti</string>
     <string name="ui_allow_notifications">Разрешите уведомления</string>
     <string name="ui_bluetooth_reason">Bluetooth нужен, чтобы передавать сигнал с телефона на браслет.</string>
-    <string name="ui_notification_reason">В настройках Android найдите AirNoti и разрешите доступ к уведомлениям.</string>
+    <string name="ui_notification_reason">В открывшемся окне Android включите доступ для AirNoti и подтвердите разрешение. Без него пересылка не работает.</string>
     <string name="ui_open_settings">Открыть настройки</string>
     <string name="ui_pair_first">Сначала добавьте Fitbit Air в Google Health на этом телефоне.</string>
     <string name="ui_strength_health">Как в Google Health</string>
@@ -39,4 +39,9 @@
     <string name="ui_privacy_note">AirNoti работает на телефоне без аккаунта. Тексты уведомлений не сохраняются.</string>
     <string name="ui_step">Шаг %1$d из %2$d</string>
     <string name="ui_selected_apps">Выбрано приложений: %1$d</string>
-<string name="ui_enable_bluetooth">Включить Bluetooth</string><string name="ui_test_cancelled">Отправка отменена или ещё не началась.</string></resources>
+<string name="ui_enable_bluetooth">Включить Bluetooth</string><string name="ui_test_cancelled">Отправка отменена или ещё не началась.</string>    <string name="ui_relay_permission_missing">Пересылка не работает: нужно разрешение Android</string>
+    <string name="ui_grant_notification_access">Разрешить получение уведомлений</string>
+    <string name="ui_permission_explanation">Один раз разрешите AirNoti получать уведомления телефона. После этого новые уведомления будут вызывать сигнал на браслете.</string>
+    <string name="ui_manual_test_only">Эта кнопка проверяет только браслет. Для сигнала от Telegram и других приложений сначала разрешите получение уведомлений.</string>
+    <string name="ui_reconnect_listener">Подключить пересылку</string>
+<string name="ui_setup_complete">Всё настроено. Включите переключатель на главном экране — новые уведомления телефона будут передаваться на браслет.</string></resources>

@@ -31,9 +31,9 @@
     <string name="strength_low">Low</string>
     <string name="strength_high">High</string>
     <string name="strength_note">Low and High change the band-wide setting on the next signal. Use Google Health setting preserves its current value.</string>
-    <string name="alpha_note">Experimental build. Not yet tested on a physical Air. Unofficial app, not affiliated with Google or Fitbit.</string>
+    <string name="alpha_note">Experimental build. Signal delivery is not guaranteed. Unofficial app, not affiliated with Google or Fitbit.</string>
     <string name="close">Close</string>
-    <string name="setup_note">Allow Bluetooth and notification access, select Air and apps. Turn on the main switch to test.</string>
+    <string name="setup_note">Allow Bluetooth and notification access, select Air and turn on the main switch. No app selection is needed.</string>
     <string name="restricted_note">If Android restricts access, open AirNoti app info and use Allow restricted settings if available. You do not need to disable Play Protect.</string>
     <string name="app_info">App info</string>
     <string name="help">Help</string>

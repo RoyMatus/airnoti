@@ -8,7 +8,7 @@ internal class NotificationPolicy(private val ownPackage: String) {
     fun accept(n: Notice, settings: Settings, connectedAt: Long): Boolean {
         val previous = seen[n.key]
         remember(n)
-        return settings.accepts(n.pkg) && n.pkg != ownPackage && !n.service && n.posted > connectedAt && previous != n.fingerprint
+        return settings.accepts(n.pkg) && n.pkg != ownPackage && n.posted > connectedAt && previous != n.fingerprint
     }
     private fun remember(n: Notice) {
         seen.remove(n.key); seen[n.key] = n.fingerprint

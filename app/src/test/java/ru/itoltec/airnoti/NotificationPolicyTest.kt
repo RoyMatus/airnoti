@@ -6,17 +6,17 @@ import org.junit.Test
 class NotificationPolicyTest {
     private val selected = Settings(enabled = true, all = false, packages = setOf("messages"))
     private fun n(key: String = "1", pkg: String = "messages", hash: String = "a", service: Boolean = false, time: Long = 101) = Notice(key, pkg, hash, null, false, service, time)
-    @Test fun selectionAndAllRetainIndividualChoice() {
+    @Test fun legacySelectionNeverRestrictsNewNotifications() {
         val all = selected.copy(all = true)
         assertTrue(all.accepts("newly.installed"))
         assertEquals(setOf("messages"), all.copy(all = false).packages)
-        assertFalse(all.copy(all = false).accepts("newly.installed"))
+        assertTrue(all.copy(all = false, packages = emptySet()).accepts("newly.installed"))
     }
     @Test fun disabledNeverAccepts() { assertFalse(NotificationPolicy("self").accept(n(), selected.copy(enabled = false, all = true), 100)) }
-    @Test fun ownAndServiceAndUnselectedAreRejected() {
+    @Test fun ownIsRejectedButServiceAndOtherAppsAreAccepted() {
         assertFalse(NotificationPolicy("self").accept(n(pkg = "self"), selected.copy(all = true), 100))
-        assertFalse(NotificationPolicy("self").accept(n(service = true), selected, 100))
-        assertFalse(NotificationPolicy("self").accept(n(pkg = "other"), selected, 100))
+        assertTrue(NotificationPolicy("self").accept(n(service = true), selected, 100))
+        assertTrue(NotificationPolicy("self").accept(n(pkg = "other"), selected, 100))
     }
     @Test fun reusedIdNewContentWorksButExactRepostDoesNot() {
         val p = NotificationPolicy("self")
@@ -53,11 +53,11 @@ class NotificationPolicyTest {
         q.offer(QueuedNotice("summary2", "messages", "g", true, 800))
         assertEquals(0, q.size)
     }
-    @Test fun disableAndSelectionChangeDiscardPending() {
+    @Test fun disableDiscardsPendingButLegacySelectionDoesNot() {
         val q = AlertQueue(); q.offer(QueuedNotice("1", "messages", null, false, 0))
         assertFalse(q.take(1000, selected.copy(enabled = false))); assertEquals(0, q.size)
         q.offer(QueuedNotice("2", "other", null, false, 1000))
-        assertFalse(q.take(2000, selected)); assertEquals(0, q.size)
+        assertTrue(q.take(2000, selected)); assertEquals(0, q.size)
     }
     @Test fun sameKeyQueueIsReplaced() {
         val q = AlertQueue()
